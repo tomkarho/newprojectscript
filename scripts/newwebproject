@@ -1,4 +1,6 @@
 #!/bin/bash
+#
+# Todo: seperate different functionality to seperate scripts
 
 
 if [ "$(id -u)" != "0" ]; then
@@ -12,9 +14,7 @@ EXPECTED_ARGS=1
 GENERALERROR=1
 E_BADARGS=65
 HTMLROOT=/home/$NEWUSERNAME/public_html
-HTMLROOTNAME=$(basename "$HTMLROOT")
 PROJECTSROOT=/home/tomkarho/Projects/
-PROJECTSROOTNAME=$(basename "$PROJECTSROOT")
 
 if [[ $EUID -ne 0 ]]; then
   echo "You must be a root user" 2>&1
