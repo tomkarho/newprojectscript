@@ -12,7 +12,9 @@ EXPECTED_ARGS=1
 GENERALERROR=1
 E_BADARGS=65
 HTMLROOT=/home/$NEWUSERNAME/public_html
+HTMLROOTNAME=$(basename "$HTMLROOT")
 PROJECTSROOT=/home/tomkarho/Projects/
+PROJECTSROOTNAME=$(basename "$PROJECTSROOT")
 
 if [[ $EUID -ne 0 ]]; then
   echo "You must be a root user" 2>&1
@@ -24,17 +26,30 @@ if [ $# -ne $EXPECTED_ARGS ]; then
 	exit $E_BADARGS
 fi
 
-#Todo: add if else to check for existing user
-echo "Creating user $NEWUSERNAME"
 
-useradd -m -g users -G git,$APACHEGROUP -s /bin/bash $NEWUSERNAME
+if id -u $NEWUSERNAME >/dev/null 2>&1; then
+    echo "user $NEWUSERNAME already exists"
+else 	
+	echo "Creating user $NEWUSERNAME"   
+	useradd -m -g users -G git,$APACHEGROUP -s /bin/bash $NEWUSERNAME
+fi
 
-#Todo: add check for existing html root folder
-echo "Creating html root"
-mkdir $HTMLROOT
 
-echo "Creating index file"
-echo $NEWUSERNAME > $HTMLROOT/index.html
+if [ -d "$HTMLROOT" ]; then
+	echo "Directory $HTMLROOT alrady exists"
+else
+	echo "Creating html root"
+	mkdir $HTMLROOT
+fi
+
+
+if [ -f "$HTMLROOT/index.html" ]; then
+	echo "Index file already exists"
+else
+	echo "Creating index file"
+	echo $NEWUSERNAME > $HTMLROOT/index.html
+fi
+
 
 echo "Changing folder and file permissions"
 chown -R $NEWUSERNAME:$APACHEGROUP $HTMLROOT
@@ -45,4 +60,8 @@ chmod 644 $HTMLROOT/index.html
 
 echo "Initializing git repositry"
 
-git init $PROJECTSROOT/$NEWUSERNAME
+if [ -d "$PROJECTSROOT/$NEWUSERNAME" ]; then
+	echo "Git repository already exists"
+else
+	git init $PROJECTSROOT/$NEWUSERNAME
+fi
