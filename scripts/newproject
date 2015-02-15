@@ -1,0 +1,23 @@
+#!/bin/bash
+
+
+if [ "$(id -u)" != "0" ]; then
+        echo "You must run this command as root"
+        exit 1
+fi
+
+NEWUSERNAME=$1
+EXPECTED_ARGS=1
+GENERALERROR=1
+E_BADARGS=65
+
+if [[ $EUID -ne 0 ]]; then
+  echo "You must be a root user" 2>&1
+  exit $GENERALERROR
+fi
+
+if [ $# -ne $EXPECTED_ARGS ]; then
+	echo "Usage: $0 project name"
+	exit $E_BADARGS
+fi
+
