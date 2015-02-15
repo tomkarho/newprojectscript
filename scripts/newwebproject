@@ -1,0 +1,48 @@
+#!/bin/bash
+
+
+if [ "$(id -u)" != "0" ]; then
+        echo "You must run this command as root"
+        exit 1
+fi
+
+NEWUSERNAME=$1
+APACHEGROUP=http
+EXPECTED_ARGS=1
+GENERALERROR=1
+E_BADARGS=65
+HTMLROOT=/home/$NEWUSERNAME/public_html
+PROJECTSROOT=/home/tomkarho/Projects/
+
+if [[ $EUID -ne 0 ]]; then
+  echo "You must be a root user" 2>&1
+  exit $GENERALERROR
+fi
+
+if [ $# -ne $EXPECTED_ARGS ]; then
+	echo "Usage: $0 projectname"
+	exit $E_BADARGS
+fi
+
+#Todo: add if else to check for existing user
+echo "Creating user $NEWUSERNAME"
+
+useradd -m -g users -G git,$APACHEGROUP -s /bin/bash $NEWUSERNAME
+
+#Todo: add check for existing html root folder
+echo "Creating html root"
+mkdir $HTMLROOT
+
+echo "Creating index file"
+echo $NEWUSERNAME > $HTMLROOT/index.html
+
+echo "Changing folder and file permissions"
+chown -R $NEWUSERNAME:$APACHEGROUP $HTMLROOT
+chmod o+x $HTMLROOT/../
+chmod o+x $HTMLROOT
+chmod 755 $HTMLROOT
+chmod 644 $HTMLROOT/index.html
+
+echo "Initializing git repositry"
+
+git init $PROJECTSROOT/$NEWUSERNAME
